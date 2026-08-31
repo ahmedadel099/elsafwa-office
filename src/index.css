@@ -4,23 +4,29 @@
 
 @layer base {
   :root {
-    --bg-canvas: #f9fafb;
+    --bg-canvas: #f8fafc;
     --bg-card: #ffffff;
     --text-primary: #0f172a;
     --text-secondary: #475569;
+    --text-muted: #64748b;
     --border-subtle: #e2e8f0;
-    --brand-primary: #0f172a;
-    --brand-accent: #059669;
+    --brand-emerald: #044e39;
+    --brand-emerald-hover: #065f46;
+    --brand-gold: #d4af37;
+    --brand-gold-dark: #b59226;
   }
 
   .dark {
     --bg-canvas: #090d16;
     --bg-card: #111827;
     --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
     --border-subtle: #1e293b;
-    --brand-primary: #ffffff;
-    --brand-accent: #10b981;
+    --brand-emerald: #059669;
+    --brand-emerald-hover: #10b981;
+    --brand-gold: #f59e0b;
+    --brand-gold-dark: #d97706;
   }
 
   body {
@@ -28,40 +34,64 @@
     color: var(--text-primary);
     min-height: 100vh;
     font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 
-/* Minimal Solid Card Surface */
-.minimal-card {
+/* Taste Card Elevation & Polish */
+.taste-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: 1rem;
+  border-radius: 1.25rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Minimal Solid Primary Button */
-.minimal-btn-primary {
-  background-color: var(--brand-primary);
-  color: var(--bg-card);
-  font-weight: 700;
-  border-radius: 0.75rem;
-  transition: opacity 0.15s ease;
+.taste-card-interactive {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1.25rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.minimal-btn-primary:hover {
-  opacity: 0.9;
+.taste-card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+  border-color: #cbd5e1;
 }
 
-.minimal-btn-accent {
-  background-color: var(--brand-accent);
+.dark .taste-card-interactive:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  border-color: #334155;
+}
+
+/* Solid Luxury Buttons */
+.btn-emerald {
+  background-color: var(--brand-emerald);
   color: #ffffff;
   font-weight: 700;
-  border-radius: 0.75rem;
-  transition: opacity 0.15s ease;
+  border-radius: 0.875rem;
+  transition: all 0.15s ease;
 }
 
-.minimal-btn-accent:hover {
-  opacity: 0.9;
+.btn-emerald:hover {
+  background-color: var(--brand-emerald-hover);
+  transform: translateY(-1px);
+}
+
+.btn-gold {
+  background-color: #f59e0b;
+  color: #0f172a;
+  font-weight: 800;
+  border-radius: 0.875rem;
+  transition: all 0.15s ease;
+}
+
+.btn-gold:hover {
+  background-color: #d97706;
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 
 /* Custom Minimal Scrollbars */
