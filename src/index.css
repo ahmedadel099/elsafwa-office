@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --bg-canvas: #f9fafb;
+    --bg-card: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --border-subtle: #e2e8f0;
+    --brand-primary: #0f172a;
+    --brand-accent: #059669;
+  }
+
+  .dark {
+    --bg-canvas: #090d16;
+    --bg-card: #111827;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --border-subtle: #1e293b;
+    --brand-primary: #ffffff;
+    --brand-accent: #10b981;
+  }
+
+  body {
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    min-height: 100vh;
+    font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+}
+
+/* Minimal Solid Card Surface */
+.minimal-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+}
+
+/* Minimal Solid Primary Button */
+.minimal-btn-primary {
+  background-color: var(--brand-primary);
+  color: var(--bg-card);
+  font-weight: 700;
+  border-radius: 0.75rem;
+  transition: opacity 0.15s ease;
+}
+
+.minimal-btn-primary:hover {
+  opacity: 0.9;
+}
+
+.minimal-btn-accent {
+  background-color: var(--brand-accent);
+  color: #ffffff;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  transition: opacity 0.15s ease;
+}
+
+.minimal-btn-accent:hover {
+  opacity: 0.9;
+}
+
+/* Custom Minimal Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+/* Printable Receipts (@media print) */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .printable-area, .printable-area * {
+    visibility: visible;
+  }
+  .printable-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
