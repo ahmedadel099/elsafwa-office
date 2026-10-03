@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { PlusCircle, UserCheck, AlertCircle, FileText, Building, CreditCard } from 'lucide-react';
+import { PlusCircle, UserCheck, AlertCircle, FileText, Building, CreditCard, ListTodo, Clock } from 'lucide-react';
 import { useData } from '../../../context/DataContext';
 import { useAuth } from '../../../context/AuthContext';
 import { useLanguage } from '../../../context/LanguageContext';
+import { WorkflowStepTemplate } from '../../../types';
 import { Modal } from '../../common/Modal';
 
 interface RequestFormModalProps {
@@ -39,6 +40,11 @@ export const RequestFormModal: React.FC<RequestFormModalProps> = ({ isOpen, onCl
     notes: ''
   });
 
+  const [customSteps, setCustomSteps] = useState<WorkflowStepTemplate[]>(() => {
+    return serviceTypes[0]?.workflow_steps || [];
+  });
+  const [showCustomizeSteps, setShowCustomizeSteps] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
   const handleServiceChange = (serviceId: string) => {
@@ -48,6 +54,9 @@ export const RequestFormModal: React.FC<RequestFormModalProps> = ({ isOpen, onCl
       service_type_id: serviceId,
       total_fee: srv?.default_fee || prev.total_fee
     }));
+    if (srv?.workflow_steps) {
+      setCustomSteps(srv.workflow_steps);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -89,7 +98,8 @@ export const RequestFormModal: React.FC<RequestFormModalProps> = ({ isOpen, onCl
         office_ref: reqData.office_ref.trim() || undefined,
         total_fee: Number(reqData.total_fee) || 0,
         notes: reqData.notes.trim() || undefined,
-        createdByUserId: currentUser?.id || 'usr-admin'
+        createdByUserId: currentUser?.id || 'usr-admin',
+        custom_steps: customSteps
       });
 
       onClose();
@@ -232,6 +242,54 @@ export const RequestFormModal: React.FC<RequestFormModalProps> = ({ isOpen, onCl
             </select>
           </div>
         </div>
+
+        {/* Designed Steps Workflow Preview Banner */}
+        {customSteps.length > 0 && (
+          <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ListTodo className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="font-extrabold text-xs text-slate-900 dark:text-white">
+                  {t('المخطط التنفيذي والمستندي المعتمد للخدمة:', 'Service Execution & Document Steps:')}
+                </span>
+                <span className="text-[10px] font-mono font-black px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-300">
+                  {customSteps.length} {t('خطوات', 'steps')}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowCustomizeSteps(!showCustomizeSteps)}
+                className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
+              >
+                {showCustomizeSteps ? t('إخفاء التفاصيل ▲', 'Hide Details ▲') : t('معاينة الخطوات والمستندات ▼', 'Preview Steps & Docs ▼')}
+              </button>
+            </div>
+
+            {showCustomizeSteps && (
+              <div className="space-y-1.5 pt-1.5 border-t border-emerald-200/60 dark:border-emerald-800/60 max-h-40 overflow-y-auto">
+                {customSteps.map((st, idx) => (
+                  <div key={st.id || idx} className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 text-[11px]">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <span className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-mono text-[9px] font-bold flex items-center justify-center shrink-0">
+                        {idx + 1}
+                      </span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 truncate">{st.title}</span>
+                      {st.required_documents && st.required_documents.length > 0 && (
+                        <span className="text-[9px] text-amber-700 dark:text-amber-400 truncate">
+                          ({st.required_documents.length} مستندات)
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-mono text-emerald-700 dark:text-emerald-400 font-bold shrink-0">
+                      {st.estimated_days} يوم
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Priority & Fee */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

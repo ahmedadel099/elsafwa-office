@@ -1,7 +1,7 @@
 // Authentic Seed Data for El Safwa Office (شركة الصفوة للخدمات الحكومية والإلكترونية)
 // License No. 679 Group B | Minya El Qamh & Aziziyya, Sharqia
 
-import { Branch, Profile, ServiceType, Client, RequestRecord, RequestStatusHistory, DocumentRecord, PaymentRecord } from '../types';
+import { Branch, Profile, ServiceType, Client, RequestRecord, RequestStatusHistory, DocumentRecord, PaymentRecord, RequestStep } from '../types';
 
 export const INITIAL_BRANCHES: Branch[] = [
   {
@@ -87,6 +87,48 @@ export const INITIAL_SERVICE_TYPES: ServiceType[] = [
     category: 'التراخيص والهندسة',
     default_fee: 4500,
     required_documents: ['صورة بطاقة الرقم القومي', 'عقد الملكية المسجل', 'شهادة صلاحية الموقع', 'الرسومات الهندسية المعتمدة', 'تقرير الإجهاد والإستشاري'],
+    workflow_steps: [
+      {
+        id: 'st-bld-1',
+        title: 'مراجعة أصل الملكية والمستندات القانونية',
+        description: 'فحص سند الملكية والتأكد من خلو العقار من المخالفات وأحقية المالك القانونية',
+        order: 1,
+        estimated_days: 2,
+        required_documents: ['صورة بطاقة الرقم القومي', 'عقد الملكية المسجل']
+      },
+      {
+        id: 'st-bld-2',
+        title: 'المعاينة الميدانية واستخراج شهادة الصلاحية',
+        description: 'معاينة الموقع وتحديد خطوط التنظيم واستخراج شهادة الصلاحية من المركز التكنولوجي',
+        order: 2,
+        estimated_days: 5,
+        required_documents: ['شهادة صلاحية الموقع']
+      },
+      {
+        id: 'st-bld-3',
+        title: 'اعتماد الرسومات الهندسية وتقرير الاستشاري',
+        description: 'مراجعة المخططات المعمارية والإنشائية مع نقابة المهندسين والمكتب الاستشاري',
+        order: 3,
+        estimated_days: 7,
+        required_documents: ['الرسومات الهندسية المعتمدة', 'تقرير الإجهاد والإستشاري']
+      },
+      {
+        id: 'st-bld-4',
+        title: 'فحص الحماية المدنية وسداد رسوم التراخيص',
+        description: 'مراجعة اشتراطات الدفاع المدني والكهرباء وتوريد رسوم مجلس المدينة',
+        order: 4,
+        estimated_days: 4,
+        required_documents: ['موافقة الدفاع المدني والكهرباء']
+      },
+      {
+        id: 'st-bld-5',
+        title: 'طباعة واعتماد وتسليم رخصة البناء النهائية',
+        description: 'صدور قرار الترخيص النهائي معتمد ومختوم وتسليم الأصول واللوحات للعميل',
+        order: 5,
+        estimated_days: 3,
+        required_documents: []
+      }
+    ],
     estimated_days: 21,
     is_active: true,
     created_at: '2026-01-01T08:00:00Z'
@@ -98,6 +140,40 @@ export const INITIAL_SERVICE_TYPES: ServiceType[] = [
     category: 'المرافق والخدمات',
     default_fee: 1500,
     required_documents: ['صورة بطاقة الرقم القومي', 'صورة عقد العقار أو المحل', 'جواب مجلس المدينة / الحي', 'رسم كروكي بالموقع'],
+    workflow_steps: [
+      {
+        id: 'st-utl-1',
+        title: 'مراجعة مستندات العقار وإثبات الحيازة',
+        description: 'استلام صورة العقد والبطاقة والتأكد من مطابقة العقار ومحضر التسليم',
+        order: 1,
+        estimated_days: 1,
+        required_documents: ['صورة بطاقة الرقم القومي', 'صورة عقد العقار أو المحل']
+      },
+      {
+        id: 'st-utl-2',
+        title: 'استخراج خطاب مجلس المدينة / الحي',
+        description: 'تقديم الطلب للحي واستخراج إفادة عدم وجود مخالفات بنائية سارية',
+        order: 2,
+        estimated_days: 3,
+        required_documents: ['جواب مجلس المدينة / الحي']
+      },
+      {
+        id: 'st-utl-3',
+        title: 'المعاينة الفنية لشركة المرافق ورسم الكروكي',
+        description: 'إجراء المعاينة وتحديد نقطة الربط ومطابقة الكروكي الميداني',
+        order: 3,
+        estimated_days: 2,
+        required_documents: ['رسم كروكي بالموقع']
+      },
+      {
+        id: 'st-utl-4',
+        title: 'سداد المقايسة وصدور أمر تركيب العداد',
+        description: 'توريد قيمة المقايسة واستلام تصريح الحفر وإذن تركيب العداد المعتمد',
+        order: 4,
+        estimated_days: 1,
+        required_documents: []
+      }
+    ],
     estimated_days: 7,
     is_active: true,
     created_at: '2026-01-01T08:00:00Z'
@@ -109,6 +185,24 @@ export const INITIAL_SERVICE_TYPES: ServiceType[] = [
     category: 'التراخيص والهندسة',
     default_fee: 3000,
     required_documents: ['صورة بطاقة الرقم القومي', 'صورة عقد الأرض / العقار', 'كروكي أبعاد الموقع'],
+    workflow_steps: [
+      {
+        id: 'st-eng-1',
+        title: 'الرفع المساحي ومعاينة الموقع على الطبيعة',
+        description: 'استلام الأبعاد ومطابقة الجيران والشارع والكروكي التخطيطي',
+        order: 1,
+        estimated_days: 2,
+        required_documents: ['صورة بطاقة الرقم القومي', 'صورة عقد الأرض / العقار', 'كروكي أبعاد الموقع']
+      },
+      {
+        id: 'st-eng-2',
+        title: 'إعداد الرسومات التنفيذية وختم الاستشاري والنقابة',
+        description: 'إخراج المخططات الأوتوكاد كاملة وختمها من مهندس نقابي معتمد',
+        order: 2,
+        estimated_days: 3,
+        required_documents: []
+      }
+    ],
     estimated_days: 5,
     is_active: true,
     created_at: '2026-01-01T08:00:00Z'
@@ -120,6 +214,40 @@ export const INITIAL_SERVICE_TYPES: ServiceType[] = [
     category: 'التراخيص المحليات',
     default_fee: 3500,
     required_documents: ['صورة بطاقة الرقم القومي', 'عقد إيجار / تمليك المحل', 'بطاقة ضريبية وسجل تجاري', 'رسم هندسي للمحل', 'موافقة الحماية المدنية'],
+    workflow_steps: [
+      {
+        id: 'st-shp-1',
+        title: 'فحص ومراجعة عقد المحل والسجل والبطاقة الضريبية',
+        description: 'استلام ومطابقة عقد الإيجار/التمليك والبطاقة والنشاط التجاري المحدد',
+        order: 1,
+        estimated_days: 2,
+        required_documents: ['صورة بطاقة الرقم القومي', 'عقد إيجار / تمليك المحل', 'بطاقة ضريبية وسجل تجاري']
+      },
+      {
+        id: 'st-shp-2',
+        title: 'إعداد الرسم الهندسي والمعاينة الميدانية للمحل',
+        description: 'معاينة مساحة المحل والاشتراطات العامة والخاصة للمركز التكنولوجي',
+        order: 2,
+        estimated_days: 4,
+        required_documents: ['رسم هندسي للمحل']
+      },
+      {
+        id: 'st-shp-3',
+        title: 'استيفاء اشتراطات الحماية المدنية والسلامة المهنية',
+        description: 'معاينة طفايات الحريق وخطة الطوارئ وتأمين المنشأة واستخراج الموافقة',
+        order: 3,
+        estimated_days: 4,
+        required_documents: ['موافقة الحماية المدنية']
+      },
+      {
+        id: 'st-shp-4',
+        title: 'سداد الرسوم واستلام إذن التشغيل والترخيص النهائي',
+        description: 'توريد الرسوم المقررة واستلام الرخصة المؤقتة أو الدائمة معتمدة',
+        order: 4,
+        estimated_days: 4,
+        required_documents: []
+      }
+    ],
     estimated_days: 14,
     is_active: true,
     created_at: '2026-01-01T08:00:00Z'
@@ -131,6 +259,40 @@ export const INITIAL_SERVICE_TYPES: ServiceType[] = [
     category: 'التراخيص والهندسة',
     default_fee: 6000,
     required_documents: ['صورة الرقم القومي', 'تقرير سلامة إنسانية واستشارية', 'صورة من المخالفة إن وجدت', 'رسومات المعاينة والتصالح'],
+    workflow_steps: [
+      {
+        id: 'st-rec-1',
+        title: 'فحص أوراق المخالفة وتحديد نموذج التقديم',
+        description: 'مراجعة نموذج التصالح وصور المخالفة وتاريخ تحريرها وسند الحيازة',
+        order: 1,
+        estimated_days: 3,
+        required_documents: ['صورة الرقم القومي', 'صورة من المخالفة إن وجدت']
+      },
+      {
+        id: 'st-rec-2',
+        title: 'إعداد تقرير السلامة الإنشائية والاستشاري',
+        description: 'فحص سلامة المبنى والهيكل الإنشائي والخرسانات بمعرفة استشاري معتمد',
+        order: 2,
+        estimated_days: 10,
+        required_documents: ['تقرير سلامة إنسانية واستشارية']
+      },
+      {
+        id: 'st-rec-3',
+        title: 'إعداد رسومات المعاينة والتصالح الهندسي',
+        description: 'رفع مخططات تفصيلية للمخالفة ومطابقتها لصور الأقمار الصناعية',
+        order: 3,
+        estimated_days: 7,
+        required_documents: ['رسومات المعاينة والتصالح']
+      },
+      {
+        id: 'st-rec-4',
+        title: 'معاينة اللجنة الفنية واستلام نموذج 8 النهائي',
+        description: 'بث اللجنة الفنية بالقبول وسداد مبالغ التصالح وتسليم نموذج 8 المعتمد',
+        order: 4,
+        estimated_days: 10,
+        required_documents: []
+      }
+    ],
     estimated_days: 30,
     is_active: true,
     created_at: '2026-01-01T08:00:00Z'
@@ -142,6 +304,40 @@ export const INITIAL_SERVICE_TYPES: ServiceType[] = [
     category: 'تراخيص مهنية وتخصصية',
     default_fee: 5000,
     required_documents: ['صورة الرقم القومي', 'كارنيه نقابة الأطباء', 'ترخيص مزاولة المهنة', 'عقد المقر والتجهيزات الطبية', 'موافقة العلاج الحر والتخلص من النفايات'],
+    workflow_steps: [
+      {
+        id: 'st-med-1',
+        title: 'مراجعة كارنيه النقابة ومستندات الطبيب والمنشأة',
+        description: 'مطابقة ترخيص مزاولة المهنة وتحديد التخصص والدرجة العلمية وعقد المكان',
+        order: 1,
+        estimated_days: 2,
+        required_documents: ['صورة الرقم القومي', 'كارنيه نقابة الأطباء']
+      },
+      {
+        id: 'st-med-2',
+        title: 'معاينة إدارة العلاج الحر ومطابقة الاشتراطات الطبية',
+        description: 'معاينة المقر وفحص التجهيزات والأجهزة الطبية وتوافق الاشتراطات الصحية',
+        order: 2,
+        estimated_days: 8,
+        required_documents: ['ترخيص مزاولة المهنة', 'عقد المقر والتجهيزات الطبية']
+      },
+      {
+        id: 'st-med-3',
+        title: 'التعاقد على النفايات الخطرة وموافقة الحماية المدنية',
+        description: 'استيفاء عقد التخلص الآمن من النفايات الطبية وتأمين العيادة ضد الحريق',
+        order: 3,
+        estimated_days: 6,
+        required_documents: ['موافقة العلاج الحر والتخلص من النفايات']
+      },
+      {
+        id: 'st-med-4',
+        title: 'إصدار ترخيص التشغيل وشهادة تسجيل المنشأة الطبية',
+        description: 'استلام شهادة القيد بالنقابة وترخيص وزارة الصحة والعلاج الحر النهائي',
+        order: 4,
+        estimated_days: 4,
+        required_documents: []
+      }
+    ],
     estimated_days: 20,
     is_active: true,
     created_at: '2026-01-01T08:00:00Z'
@@ -153,6 +349,32 @@ export const INITIAL_SERVICE_TYPES: ServiceType[] = [
     category: 'تراخيص محليات وتموين',
     default_fee: 4000,
     required_documents: ['صورة الرقم القومي', 'عقد المقر معتمد', 'موافقة التموين والحماية المدنية', 'الشهادات الصحية للعاملين'],
+    workflow_steps: [
+      {
+        id: 'st-bak-1',
+        title: 'مراجعة عقد المقر والمواصفات الفنية للمخبز',
+        description: 'فحص مساحة المخبز والمداخن والارتفاعات ومصادر المياه والوقود',
+        order: 1,
+        estimated_days: 3,
+        required_documents: ['صورة الرقم القومي', 'عقد المقر معتمد']
+      },
+      {
+        id: 'st-bak-2',
+        title: 'معاينة التموين والصحة والشهادات الصحية',
+        description: 'مطابقة حصة الدقيق أو فحص المعدات والشهادات الصحية للعاملين',
+        order: 2,
+        estimated_days: 6,
+        required_documents: ['الشهادات الصحية للعاملين']
+      },
+      {
+        id: 'st-bak-3',
+        title: 'موافقة الحماية المدنية واعتماد ترخيص التشغيل',
+        description: 'معاينة أجهزة الإطفاء واستلام ترخيص إدارة التموين والمركز التكنولوجي',
+        order: 3,
+        estimated_days: 6,
+        required_documents: ['موافقة التموين والحماية المدنية']
+      }
+    ],
     estimated_days: 15,
     is_active: true,
     created_at: '2026-01-01T08:00:00Z'
@@ -164,6 +386,40 @@ export const INITIAL_SERVICE_TYPES: ServiceType[] = [
     category: 'خدمات الاستثمار والشركات',
     default_fee: 7000,
     required_documents: ['صور بطاقات الشركاء', 'عقد مقترح للشركة', 'شهادة البنك بحساب التأسيس', 'عقد المقر أو السجل العقاري'],
+    workflow_steps: [
+      {
+        id: 'st-cmp-1',
+        title: 'فحص أسماء الشركات والتوكيلات والشركاء',
+        description: 'التحقق من عدم تكرار الاسم التجاري واستلام التوكيلات الرسمية للشركاء',
+        order: 1,
+        estimated_days: 2,
+        required_documents: ['صور بطاقات الشركاء', 'عقد مقترح للشركة']
+      },
+      {
+        id: 'st-cmp-2',
+        title: 'فتح حساب بنكي للتأسيس وتوثيق العقد بالشهر العقاري',
+        description: 'إيداع رأس المال واستخراج الشهادة البنكية وتصديق نقابة المحامين',
+        order: 2,
+        estimated_days: 3,
+        required_documents: ['شهادة البنك بحساب التأسيس']
+      },
+      {
+        id: 'st-cmp-3',
+        title: 'القيد بهيئة الاستثمار وإصدار البطاقة الضريبية',
+        description: 'استخراج الموافقة الأمنية والقيد وإصدار ملف الضرائب العامة والقيمة المضافة',
+        order: 3,
+        estimated_days: 3,
+        required_documents: ['عقد المقر أو السجل العقاري']
+      },
+      {
+        id: 'st-cmp-4',
+        title: 'استخراج السجل التجاري واستلام الدفاتر والأختام',
+        description: 'طباعة مستخرج السجل التجاري المعتمد وتفعيل ملف التأمينات الاجتماعية',
+        order: 4,
+        estimated_days: 2,
+        required_documents: []
+      }
+    ],
     estimated_days: 10,
     is_active: true,
     created_at: '2026-01-01T08:00:00Z'
@@ -175,6 +431,40 @@ export const INITIAL_SERVICE_TYPES: ServiceType[] = [
     category: 'خدمات الاستثمار والشركات',
     default_fee: 8500,
     required_documents: ['صورة السجل التجاري والبطاقة الضريبية', 'الدراسة البيئية والمخطط الصناعي', 'موافقة الدفاع المدني والكهرباء'],
+    workflow_steps: [
+      {
+        id: 'st-ida-1',
+        title: 'مراجعة الموقف العقاري والقانوني للمصنع',
+        description: 'فحص تخصيص الأرض الصناعية والسجل التجاري والبطاقة الضريبية',
+        order: 1,
+        estimated_days: 4,
+        required_documents: ['صورة السجل التجاري والبطاقة الضريبية']
+      },
+      {
+        id: 'st-ida-2',
+        title: 'إعداد الدراسة البيئية والمخطط الصناعي',
+        description: 'إعداد تقرير تقييم الأثر البيئي ومخطط الماكينات وخطوط الإنتاج',
+        order: 2,
+        estimated_days: 10,
+        required_documents: ['الدراسة البيئية والمخطط الصناعي']
+      },
+      {
+        id: 'st-ida-3',
+        title: 'موافقة الحماية المدنية والتغذية الكهربائية',
+        description: 'مطابقة شبكة الحريق والتأريض والقدرات الكهربائية المطلوبة للمصنع',
+        order: 3,
+        estimated_days: 7,
+        required_documents: ['موافقة الدفاع المدني والكهرباء']
+      },
+      {
+        id: 'st-ida-4',
+        title: 'صدور رخصة التشغيل والسجل الصناعي النهائي',
+        description: 'اعتماد الملف من هيئة التنمية الصناعية وتسليم رخصة التشغيل الدائمة',
+        order: 4,
+        estimated_days: 4,
+        required_documents: []
+      }
+    ],
     estimated_days: 25,
     is_active: true,
     created_at: '2026-01-01T08:00:00Z'
@@ -186,6 +476,40 @@ export const INITIAL_SERVICE_TYPES: ServiceType[] = [
     category: 'التراخيص المحليات',
     default_fee: 3800,
     required_documents: ['صورة الرقم القومي', 'عقد المكان', 'موافقة شرطة المصنفات والحماية المدنية', 'موافقة السلامة والصحة المهنية'],
+    workflow_steps: [
+      {
+        id: 'st-caf-1',
+        title: 'استلام أصل العقد ومعاينة موقع الكافيه',
+        description: 'فحص عقد المقر والتأكد من عدم مجاورة دور عبادة أو مدارس وفق الضوابط',
+        order: 1,
+        estimated_days: 2,
+        required_documents: ['صورة الرقم القومي', 'عقد المكان']
+      },
+      {
+        id: 'st-caf-2',
+        title: 'معاينة شرطة المصنفات الفنية وجهاز الرقابة',
+        description: 'فحص الشاشات وأنظمة الصوت والبرمجيات والمحتوى المرئي',
+        order: 2,
+        estimated_days: 4,
+        required_documents: ['موافقة شرطة المصنفات والحماية المدنية']
+      },
+      {
+        id: 'st-caf-3',
+        title: 'اشتراطات السلامة والصحة المهنية والدفاع المدني',
+        description: 'مطابقة أجهزة الإطفاء والمخارج ومسافات الأمان وموافقات البيئة',
+        order: 3,
+        estimated_days: 4,
+        required_documents: ['موافقة السلامة والصحة المهنية']
+      },
+      {
+        id: 'st-caf-4',
+        title: 'توريد الرسوم واستلام تصريح التشغيل',
+        description: 'سداد الرسوم بالمركز التكنولوجي واستلام ترخيص الكافيه المعتمد',
+        order: 4,
+        estimated_days: 2,
+        required_documents: []
+      }
+    ],
     estimated_days: 12,
     is_active: true,
     created_at: '2026-01-01T08:00:00Z'
@@ -197,6 +521,24 @@ export const INITIAL_SERVICE_TYPES: ServiceType[] = [
     category: 'الخدمات الحكومية الجماهيرية',
     default_fee: 800,
     required_documents: ['صورة الرقم القومي', 'برينت تأميني حديث', 'طلب سداد / تسوية التأمينات'],
+    workflow_steps: [
+      {
+        id: 'st-ins-1',
+        title: 'استخراج البرينت التأميني وفحص المدد',
+        description: 'سحب كشف مدد التأمين السابقة ومراجعة الرقم التأميني',
+        order: 1,
+        estimated_days: 1,
+        required_documents: ['صورة الرقم القومي', 'برينت تأميني حديث']
+      },
+      {
+        id: 'st-ins-2',
+        title: 'تسوية المديونيات واستلام شهادة براءة الذمة',
+        description: 'سداد الاشتراكات المتأخرة واستلام الإفادة الرسمية الموجهة للجهة المعنية',
+        order: 2,
+        estimated_days: 2,
+        required_documents: ['طلب سداد / تسوية التأمينات']
+      }
+    ],
     estimated_days: 3,
     is_active: true,
     created_at: '2026-01-01T08:00:00Z'
@@ -208,6 +550,24 @@ export const INITIAL_SERVICE_TYPES: ServiceType[] = [
     category: 'الخدمات الحكومية الجماهيرية',
     default_fee: 2500,
     required_documents: ['صورة الرقم القومي', 'بيانات السجل أو النمط الفني', 'التفويض الرسمي'],
+    workflow_steps: [
+      {
+        id: 'st-tch-1',
+        title: 'مراجعة الملف الفني وسند التمثيل',
+        description: 'فحص التوكيل أو التفويض وتدقيق البيانات الفنية للخدمة المطلوبة',
+        order: 1,
+        estimated_days: 2,
+        required_documents: ['صورة الرقم القومي', 'التفويض الرسمي']
+      },
+      {
+        id: 'st-tch-2',
+        title: 'إنجاز الإجراء المكتبي واستلام الشهادة الفنية',
+        description: 'التنسيق مع الجهة المختصة واستلام المحرر الفني المعتمد',
+        order: 2,
+        estimated_days: 3,
+        required_documents: ['بيانات السجل أو النمط الفني']
+      }
+    ],
     estimated_days: 5,
     is_active: true,
     created_at: '2026-01-01T08:00:00Z'
@@ -445,6 +805,7 @@ export const INITIAL_DOCUMENTS: DocumentRecord[] = [
   {
     id: 'doc-101-2',
     request_id: 'req-101',
+    step_id: 'step-101-1',
     document_type: 'عقد إيجار / تمليك المحل',
     file_name: 'عقد_إيجار_محل_منيا_القمح.pdf',
     file_path: '/uploads/req-101/lease_contract.pdf',
@@ -457,6 +818,7 @@ export const INITIAL_DOCUMENTS: DocumentRecord[] = [
   {
     id: 'doc-102-1',
     request_id: 'req-102',
+    step_id: 'step-102-1',
     document_type: 'كارنيه نقابة الأطباء',
     file_name: 'كارنيه_النقابة_د_سامح.pdf',
     file_path: '/uploads/req-102/doctor_syndicate.pdf',
@@ -516,5 +878,236 @@ export const INITIAL_PAYMENTS: PaymentRecord[] = [
     receipt_no: 'REC-2026-00894',
     notes: 'تحويل بنكي بالكامل لاتمام تأسيس الشركة السجل والاستثمار',
     created_at: '2026-02-08T14:40:00Z'
+  }
+];
+
+export const INITIAL_REQUEST_STEPS: RequestStep[] = [
+  // req-101 (تراخيص محلات تجارية)
+  {
+    id: 'step-101-1',
+    request_id: 'req-101',
+    title: 'فحص ومراجعة عقد المحل والسجل والبطاقة الضريبية',
+    description: 'استلام ومطابقة عقد الإيجار/التمليك والبطاقة والنشاط التجاري المحدد',
+    order: 1,
+    estimated_days: 2,
+    target_date: '2026-02-04',
+    status: 'completed',
+    completed_at: '2026-02-03',
+    completed_by_name: 'إسلام حسن',
+    required_documents: ['صورة بطاقة الرقم القومي', 'عقد إيجار / تمليك المحل', 'بطاقة ضريبية وسجل تجاري'],
+    attached_document_ids: ['doc-101-1', 'doc-101-2'],
+    created_at: '2026-02-02T09:30:00Z'
+  },
+  {
+    id: 'step-101-2',
+    request_id: 'req-101',
+    title: 'إعداد الرسم الهندسي والمعاينة الميدانية للمحل',
+    description: 'معاينة مساحة المحل والاشتراطات العامة والخاصة للمركز التكنولوجي',
+    order: 2,
+    estimated_days: 4,
+    target_date: '2026-02-08',
+    status: 'completed',
+    completed_at: '2026-02-07',
+    completed_by_name: 'إسلام حسن',
+    required_documents: ['رسم هندسي للمحل'],
+    attached_document_ids: [],
+    created_at: '2026-02-02T09:30:00Z'
+  },
+  {
+    id: 'step-101-3',
+    request_id: 'req-101',
+    title: 'استيفاء اشتراطات الحماية المدنية والسلامة المهنية',
+    description: 'معاينة طفايات الحريق وخطة الطوارئ وتأمين المنشأة واستخراج الموافقة',
+    order: 3,
+    estimated_days: 4,
+    target_date: '2026-02-12',
+    status: 'in_progress',
+    required_documents: ['موافقة الحماية المدنية'],
+    attached_document_ids: [],
+    created_at: '2026-02-02T09:30:00Z'
+  },
+  {
+    id: 'step-101-4',
+    request_id: 'req-101',
+    title: 'سداد الرسوم واستلام إذن التشغيل والترخيص النهائي',
+    description: 'توريد الرسوم المقررة واستلام الرخصة المؤقتة أو الدائمة معتمدة',
+    order: 4,
+    estimated_days: 4,
+    target_date: '2026-02-16',
+    status: 'pending',
+    required_documents: [],
+    attached_document_ids: [],
+    created_at: '2026-02-02T09:30:00Z'
+  },
+
+  // req-102 (تراخيص عيادات طبية)
+  {
+    id: 'step-102-1',
+    request_id: 'req-102',
+    title: 'مراجعة كارنيه النقابة ومستندات الطبيب والمنشأة',
+    description: 'مطابقة ترخيص مزاولة المهنة وتحديد التخصص والدرجة العلمية وعقد المكان',
+    order: 1,
+    estimated_days: 2,
+    target_date: '2026-02-06',
+    status: 'completed',
+    completed_at: '2026-02-05',
+    completed_by_name: 'منى فاروق',
+    required_documents: ['صورة الرقم القومي', 'كارنيه نقابة الأطباء'],
+    attached_document_ids: ['doc-102-1'],
+    created_at: '2026-02-04T11:00:00Z'
+  },
+  {
+    id: 'step-102-2',
+    request_id: 'req-102',
+    title: 'معاينة إدارة العلاج الحر ومطابقة الاشتراطات الطبية',
+    description: 'معاينة المقر وفحص التجهيزات والأجهزة الطبية وتوافق الاشتراطات الصحية',
+    order: 2,
+    estimated_days: 8,
+    target_date: '2026-02-14',
+    status: 'in_progress',
+    required_documents: ['ترخيص مزاولة المهنة', 'عقد المقر والتجهيزات الطبية'],
+    attached_document_ids: [],
+    created_at: '2026-02-04T11:00:00Z'
+  },
+  {
+    id: 'step-102-3',
+    request_id: 'req-102',
+    title: 'التعاقد على النفايات الخطرة وموافقة الحماية المدنية',
+    description: 'استيفاء عقد التخلص الآمن من النفايات الطبية وتأمين العيادة ضد الحريق',
+    order: 3,
+    estimated_days: 6,
+    target_date: '2026-02-20',
+    status: 'pending',
+    required_documents: ['موافقة العلاج الحر والتخلص من النفايات'],
+    attached_document_ids: [],
+    created_at: '2026-02-04T11:00:00Z'
+  },
+  {
+    id: 'step-102-4',
+    request_id: 'req-102',
+    title: 'إصدار ترخيص التشغيل وشهادة تسجيل المنشأة الطبية',
+    description: 'استلام شهادة القيد بالنقابة وترخيص وزارة الصحة والعلاج الحر النهائي',
+    order: 4,
+    estimated_days: 4,
+    target_date: '2026-02-24',
+    status: 'pending',
+    required_documents: [],
+    attached_document_ids: [],
+    created_at: '2026-02-04T11:00:00Z'
+  },
+
+  // req-103 (التصالح في مخالفات البناء)
+  {
+    id: 'step-103-1',
+    request_id: 'req-103',
+    title: 'فحص أوراق المخالفة وتحديد نموذج التقديم',
+    description: 'مراجعة نموذج التصالح وصور المخالفة وتاريخ تحريرها وسند الحيازة',
+    order: 1,
+    estimated_days: 3,
+    target_date: '2026-02-09',
+    status: 'completed',
+    completed_at: '2026-02-08',
+    completed_by_name: 'إسلام حسن',
+    required_documents: ['صورة الرقم القومي', 'صورة من المخالفة إن وجدت'],
+    attached_document_ids: [],
+    created_at: '2026-02-06T12:15:00Z'
+  },
+  {
+    id: 'step-103-2',
+    request_id: 'req-103',
+    title: 'إعداد تقرير السلامة الإنشائية والاستشاري',
+    description: 'فحص سلامة المبنى والهيكل الإنشائي والخرسانات بمعرفة استشاري معتمد',
+    order: 2,
+    estimated_days: 10,
+    target_date: '2026-02-19',
+    status: 'blocked',
+    notes: 'موقوف مؤقتاً لحين استخراج واعتماد تقرير السلامة الإنشائية الاستشاري',
+    required_documents: ['تقرير سلامة إنسانية واستشارية'],
+    attached_document_ids: [],
+    created_at: '2026-02-06T12:15:00Z'
+  },
+  {
+    id: 'step-103-3',
+    request_id: 'req-103',
+    title: 'إعداد رسومات المعاينة والتصالح الهندسي',
+    description: 'رفع مخططات تفصيلية للمخالفة ومطابقتها لصور الأقمار الصناعية',
+    order: 3,
+    estimated_days: 7,
+    target_date: '2026-02-26',
+    status: 'pending',
+    required_documents: ['رسومات المعاينة والتصالح'],
+    attached_document_ids: [],
+    created_at: '2026-02-06T12:15:00Z'
+  },
+  {
+    id: 'step-103-4',
+    request_id: 'req-103',
+    title: 'معاينة اللجنة الفنية واستلام نموذج 8 النهائي',
+    description: 'بث اللجنة الفنية بالقبول وسداد مبالغ التصالح وتسليم نموذج 8 المعتمد',
+    order: 4,
+    estimated_days: 10,
+    target_date: '2026-03-08',
+    status: 'pending',
+    required_documents: [],
+    attached_document_ids: [],
+    created_at: '2026-02-06T12:15:00Z'
+  },
+
+  // req-104 (تأسيس شركات)
+  {
+    id: 'step-104-1',
+    request_id: 'req-104',
+    title: 'فحص أسماء الشركات والتوكيلات والشركاء',
+    description: 'التحقق من عدم تكرار الاسم التجاري واستلام التوكيلات الرسمية للشركاء',
+    order: 1,
+    estimated_days: 2,
+    target_date: '2026-02-10',
+    status: 'completed',
+    completed_at: '2026-02-09',
+    completed_by_name: 'منى فاروق',
+    required_documents: ['صور بطاقات الشركاء', 'عقد مقترح للشركة'],
+    attached_document_ids: [],
+    created_at: '2026-02-08T14:30:00Z'
+  },
+  {
+    id: 'step-104-2',
+    request_id: 'req-104',
+    title: 'فتح حساب بنكي للتأسيس وتوثيق العقد بالشهر العقاري',
+    description: 'إيداع رأس المال واستخراج الشهادة البنكية وتصديق نقابة المحامين',
+    order: 2,
+    estimated_days: 3,
+    target_date: '2026-02-13',
+    status: 'completed',
+    completed_at: '2026-02-12',
+    completed_by_name: 'منى فاروق',
+    required_documents: ['شهادة البنك بحساب التأسيس'],
+    attached_document_ids: [],
+    created_at: '2026-02-08T14:30:00Z'
+  },
+  {
+    id: 'step-104-3',
+    request_id: 'req-104',
+    title: 'القيد بهيئة الاستثمار وإصدار البطاقة الضريبية',
+    description: 'استخراج الموافقة الأمنية والقيد وإصدار ملف الضرائب العامة والقيمة المضافة',
+    order: 3,
+    estimated_days: 3,
+    target_date: '2026-02-16',
+    status: 'in_progress',
+    required_documents: ['عقد المقر أو السجل العقاري'],
+    attached_document_ids: [],
+    created_at: '2026-02-08T14:30:00Z'
+  },
+  {
+    id: 'step-104-4',
+    request_id: 'req-104',
+    title: 'استخراج السجل التجاري واستلام الدفاتر والأختام',
+    description: 'طباعة مستخرج السجل التجاري المعتمد وتفعيل ملف التأمينات الاجتماعية',
+    order: 4,
+    estimated_days: 2,
+    target_date: '2026-02-18',
+    status: 'pending',
+    required_documents: [],
+    attached_document_ids: [],
+    created_at: '2026-02-08T14:30:00Z'
   }
 ];

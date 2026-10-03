@@ -39,6 +39,32 @@ export interface Profile {
   created_at: string;
 }
 
+export interface WorkflowStepTemplate {
+  id: string;
+  title: string;
+  description?: string;
+  order: number;
+  estimated_days: number;
+  required_documents: string[]; // List of required doc types for this specific step
+}
+
+export interface RequestStep {
+  id: string;
+  request_id: string;
+  title: string;
+  description?: string;
+  order: number;
+  estimated_days: number;
+  target_date?: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'blocked';
+  completed_at?: string;
+  completed_by_name?: string;
+  required_documents: string[];
+  attached_document_ids?: string[];
+  notes?: string;
+  created_at: string;
+}
+
 export interface ServiceType {
   id: string;
   name_ar: string;
@@ -46,6 +72,7 @@ export interface ServiceType {
   category: string;
   default_fee: number;
   required_documents: string[]; // JSON array of required doc names
+  workflow_steps?: WorkflowStepTemplate[]; // Configurable multi-step checklist with per-step required docs & timeline
   estimated_days: number;
   is_active: boolean;
   created_at: string;
@@ -91,6 +118,9 @@ export interface RequestRecord {
   assigned_employee_name?: string;
   paid_amount?: number;
   balance_due?: number;
+
+  // Workflow steps with per-step required documents & timeline
+  steps?: RequestStep[];
 }
 
 export interface RequestStatusHistory {
@@ -107,6 +137,7 @@ export interface RequestStatusHistory {
 export interface DocumentRecord {
   id: string;
   request_id: string;
+  step_id?: string;
   document_type: string;
   file_name: string;
   file_path: string;
@@ -155,4 +186,5 @@ export interface TrackingSearchResult {
     comment: string;
     created_at: string;
   }>;
+  steps?: RequestStep[];
 }

@@ -61,7 +61,7 @@ export const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ request,
           }`}
         >
           <ListTodo className="w-4 h-4 text-gold-400" />
-          <span>{t('قائمة المهمات الإجرائية (Done/Pending)', 'Task Checklist')}</span>
+          <span>{t('مسار الخطوات والمستندات المطلوبة', 'Step Checklist & Required Docs')}</span>
         </button>
 
         <button

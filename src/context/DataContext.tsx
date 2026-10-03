@@ -8,7 +8,9 @@ import {
   DocumentRecord, 
   PaymentRecord,
   DashboardMetrics,
-  RequestStatus
+  RequestStatus,
+  RequestStep,
+  WorkflowStepTemplate
 } from '../types';
 import { sqliteEngine } from '../db/sqliteEngine';
 import { useAuth } from './AuthContext';
@@ -38,6 +40,17 @@ interface DataContextType {
   getRequestDocuments: (requestId: string) => DocumentRecord[];
   getRequestPayments: (requestId: string) => PaymentRecord[];
   trackPublicRequest: (ref: string, phone: string) => ReturnType<typeof sqliteEngine.trackPublicRequest>;
+
+  // Workflow Steps API
+  getRequestSteps: (requestId: string) => RequestStep[];
+  saveRequestStep: (step: Parameters<typeof sqliteEngine.saveRequestStep>[0]) => RequestStep;
+  updateRequestSteps: (requestId: string, steps: RequestStep[]) => RequestStep[];
+  toggleStepCompletion: (stepId: string, completedBy: string, completed?: boolean) => RequestStep;
+  setStepStatus: (stepId: string, status: 'pending' | 'in_progress' | 'completed' | 'blocked', user?: string) => RequestStep;
+  linkDocumentToStep: (stepId: string, documentId: string) => void;
+  unlinkDocumentFromStep: (stepId: string, documentId: string) => void;
+  deleteRequestStep: (stepId: string) => void;
+  resetRequestStepsToServiceTemplate: (requestId: string) => RequestStep[];
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -159,6 +172,55 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return sqliteEngine.trackPublicRequest(ref, phone);
   };
 
+  const getRequestSteps = (requestId: string) => {
+    return sqliteEngine.getRequestSteps(requestId);
+  };
+
+  const saveRequestStep = (step: Parameters<typeof sqliteEngine.saveRequestStep>[0]) => {
+    const res = sqliteEngine.saveRequestStep(step);
+    refreshData();
+    return res;
+  };
+
+  const updateRequestSteps = (requestId: string, steps: RequestStep[]) => {
+    const res = sqliteEngine.updateRequestSteps(requestId, steps);
+    refreshData();
+    return res;
+  };
+
+  const toggleStepCompletion = (stepId: string, completedBy: string, completed?: boolean) => {
+    const res = sqliteEngine.toggleStepCompletion(stepId, completedBy, completed);
+    refreshData();
+    return res;
+  };
+
+  const setStepStatus = (stepId: string, status: 'pending' | 'in_progress' | 'completed' | 'blocked', user?: string) => {
+    const res = sqliteEngine.setStepStatus(stepId, status, user);
+    refreshData();
+    return res;
+  };
+
+  const linkDocumentToStep = (stepId: string, documentId: string) => {
+    sqliteEngine.linkDocumentToStep(stepId, documentId);
+    refreshData();
+  };
+
+  const unlinkDocumentFromStep = (stepId: string, documentId: string) => {
+    sqliteEngine.unlinkDocumentFromStep(stepId, documentId);
+    refreshData();
+  };
+
+  const deleteRequestStep = (stepId: string) => {
+    sqliteEngine.deleteRequestStep(stepId);
+    refreshData();
+  };
+
+  const resetRequestStepsToServiceTemplate = (requestId: string) => {
+    const res = sqliteEngine.resetRequestStepsToServiceTemplate(requestId);
+    refreshData();
+    return res;
+  };
+
   return (
     <DataContext.Provider value={{
       branches,
@@ -182,7 +244,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       getRequestStatusHistory,
       getRequestDocuments,
       getRequestPayments,
-      trackPublicRequest
+      trackPublicRequest,
+      getRequestSteps,
+      saveRequestStep,
+      updateRequestSteps,
+      toggleStepCompletion,
+      setStepStatus,
+      linkDocumentToStep,
+      unlinkDocumentFromStep,
+      deleteRequestStep,
+      resetRequestStepsToServiceTemplate
     }}>
       {children}
     </DataContext.Provider>

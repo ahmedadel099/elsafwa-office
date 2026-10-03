@@ -10,7 +10,8 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
-  Info
+  Info,
+  ListTodo
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -208,6 +209,99 @@ export const PublicTracker: React.FC<PublicTrackerProps> = ({ initialRef = '', i
               })}
             </div>
           </div>
+
+          {/* Detailed Request Steps Checklist & Document Readiness */}
+          {result.steps && result.steps.length > 0 && (
+            <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h4 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                  <ListTodo className="w-4 h-4 text-emerald-600" />
+                  <span>{t('الموقف التنفيذي التفصيلي للخطوات والمستندات', 'Step-by-Step Execution & Document Checklist')}</span>
+                </h4>
+                <span className="text-xs font-mono font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/60">
+                  {result.steps.filter(s => s.status === 'completed').length} / {result.steps.length} {t('خطوات منجزة', 'steps done')}
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {result.steps.map((st, sIdx) => {
+                  const isDone = st.status === 'completed';
+                  const isInProgress = st.status === 'in_progress';
+                  const isBlocked = st.status === 'blocked';
+
+                  return (
+                    <div 
+                      key={st.id || sIdx}
+                      className={`p-4 rounded-2xl border transition ${
+                        isDone 
+                          ? 'bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60'
+                          : isInProgress
+                          ? 'bg-amber-50/50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700/80 shadow-sm'
+                          : isBlocked
+                          ? 'bg-rose-50/50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/60'
+                          : 'bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800'
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <span className={`w-6 h-6 rounded-lg font-mono font-bold text-xs flex items-center justify-center shrink-0 ${
+                            isDone 
+                              ? 'bg-emerald-600 text-white' 
+                              : isInProgress 
+                              ? 'bg-amber-500 text-white animate-pulse' 
+                              : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                          }`}>
+                            {isDone ? '✓' : (sIdx + 1)}
+                          </span>
+
+                          <div>
+                            <span className={`font-bold text-xs ${isDone ? 'line-through text-slate-500' : 'text-slate-900 dark:text-white'}`}>
+                              {st.title}
+                            </span>
+                            {st.description && (
+                              <p className="text-[11px] text-slate-500 mt-0.5">{st.description}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black ${
+                            isDone 
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' 
+                              : isInProgress 
+                              ? 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200' 
+                              : isBlocked
+                              ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                              : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                          }`}>
+                            {isDone ? '✓ تم الإنجاز' : isInProgress ? '⚡ جاري العمل' : isBlocked ? '⚠️ موقوف مؤقتاً' : '⏳ معلق'}
+                          </span>
+
+                          {st.target_date && (
+                            <span className="text-[10px] font-mono text-slate-400">
+                              {formatDateArabic(st.target_date)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Required Documents in step */}
+                      {st.required_documents && st.required_documents.length > 0 && (
+                        <div className="mt-2.5 pt-2 border-t border-slate-200/50 dark:border-slate-800/50 flex flex-wrap items-center gap-1.5 text-[10px]">
+                          <span className="text-slate-400 font-bold">المستندات المطلوبة:</span>
+                          {st.required_documents.map((rd, rIdx) => (
+                            <span key={rIdx} className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold">
+                              📄 {rd}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Public Status Timeline Logs */}
           <div className="pt-6 border-t border-slate-100 dark:border-slate-800">

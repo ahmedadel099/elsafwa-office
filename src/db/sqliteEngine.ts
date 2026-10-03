@@ -12,7 +12,9 @@ import {
   PaymentRecord, 
   RequestStatus,
   TrackingSearchResult,
-  DashboardMetrics
+  DashboardMetrics,
+  RequestStep,
+  WorkflowStepTemplate
 } from '../types';
 
 import { 
@@ -23,7 +25,8 @@ import {
   INITIAL_REQUESTS, 
   INITIAL_STATUS_HISTORY, 
   INITIAL_DOCUMENTS, 
-  INITIAL_PAYMENTS 
+  INITIAL_PAYMENTS,
+  INITIAL_REQUEST_STEPS
 } from './initialSeed';
 
 const STORAGE_KEY = 'ELSAFWA_SQLITE_LOCAL_DB_V1';
@@ -37,6 +40,7 @@ interface LocalDatabaseState {
   request_status_history: RequestStatusHistory[];
   documents: DocumentRecord[];
   payments: PaymentRecord[];
+  request_steps: RequestStep[];
 }
 
 class SqliteLocalEngine {
@@ -51,7 +55,33 @@ class SqliteLocalEngine {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        return JSON.parse(stored);
+        const state: LocalDatabaseState = JSON.parse(stored);
+        let modified = false;
+
+        // Migration: Ensure request_steps exists
+        if (!state.request_steps || state.request_steps.length === 0) {
+          state.request_steps = INITIAL_REQUEST_STEPS;
+          modified = true;
+        }
+
+        // Migration: Ensure service_types have workflow_steps
+        if (state.service_types) {
+          state.service_types.forEach(s => {
+            if (!s.workflow_steps || s.workflow_steps.length === 0) {
+              const seedService = INITIAL_SERVICE_TYPES.find(initS => initS.id === s.id);
+              if (seedService?.workflow_steps) {
+                s.workflow_steps = seedService.workflow_steps;
+                modified = true;
+              }
+            }
+          });
+        }
+
+        if (modified) {
+          this.saveDatabase(state);
+        }
+
+        return state;
       }
     } catch (e) {
       console.error('Failed to load local DB state from storage, reinitializing...', e);
@@ -66,6 +96,7 @@ class SqliteLocalEngine {
       request_status_history: INITIAL_STATUS_HISTORY,
       documents: INITIAL_DOCUMENTS,
       payments: INITIAL_PAYMENTS,
+      request_steps: INITIAL_REQUEST_STEPS,
     };
 
     this.saveDatabase(defaultState);
@@ -170,12 +201,24 @@ class SqliteLocalEngine {
     return this.db.service_types;
   }
 
-  public saveServiceType(service: Partial<ServiceType> & { name_ar: string; name_en: string; category: string; default_fee: number; required_documents: string[]; estimated_days: number }): ServiceType {
+  public saveServiceType(service: Partial<ServiceType> & { 
+    name_ar: string; 
+    name_en: string; 
+    category: string; 
+    default_fee: number; 
+    required_documents: string[]; 
+    estimated_days: number;
+    workflow_steps?: WorkflowStepTemplate[];
+  }): ServiceType {
     let updated: ServiceType;
     if (service.id) {
       const idx = this.db.service_types.findIndex(s => s.id === service.id);
       if (idx !== -1) {
-        updated = { ...this.db.service_types[idx], ...service };
+        updated = { 
+          ...this.db.service_types[idx], 
+          ...service,
+          workflow_steps: service.workflow_steps ?? this.db.service_types[idx].workflow_steps
+        };
         this.db.service_types[idx] = updated;
       } else {
         throw new Error('Service type not found');
@@ -189,6 +232,7 @@ class SqliteLocalEngine {
         default_fee: service.default_fee,
         required_documents: service.required_documents,
         estimated_days: service.estimated_days,
+        workflow_steps: service.workflow_steps || [],
         is_active: service.is_active ?? true,
         created_at: new Date().toISOString()
       };
@@ -300,6 +344,16 @@ class SqliteLocalEngine {
     return this.hydrateRequestRecord(raw);
   }
 
+  private calculateStepTargetDates(startDateStr: string, steps: Array<{ estimated_days: number }>): string[] {
+    let current = new Date(startDateStr);
+    return steps.map(s => {
+      const target = new Date(current);
+      target.setDate(target.getDate() + (s.estimated_days || 1));
+      current = new Date(target);
+      return target.toISOString().split('T')[0];
+    });
+  }
+
   private hydrateRequestRecord(raw: RequestRecord): RequestRecord {
     const client = this.db.clients.find(c => c.id === raw.client_id);
     const service = this.db.service_types.find(s => s.id === raw.service_type_id);
@@ -321,7 +375,8 @@ class SqliteLocalEngine {
       branch_name_ar: branch?.name_ar || 'غير محدد',
       assigned_employee_name: emp?.full_name || 'غير معين',
       paid_amount,
-      balance_due
+      balance_due,
+      steps: this.getRequestSteps(raw.id)
     };
   }
 
@@ -337,13 +392,46 @@ class SqliteLocalEngine {
     total_fee: number;
     notes?: string;
     createdByUserId: string;
+    custom_steps?: WorkflowStepTemplate[];
   }): RequestRecord {
     const tracking_ref = this.generateTrackingRef();
     const service = this.db.service_types.find(s => s.id === data.service_type_id);
     
+    const templateSteps: WorkflowStepTemplate[] = (data.custom_steps && data.custom_steps.length > 0)
+      ? data.custom_steps
+      : (service?.workflow_steps && service.workflow_steps.length > 0)
+        ? service.workflow_steps
+        : [
+            {
+              id: 'st-def-1',
+              title: 'مراجعة المستندات الثبوتية وأصول العقود',
+              description: 'فحص الهوية ومطابقة الأوراق المقدمة',
+              order: 1,
+              estimated_days: 2,
+              required_documents: service?.required_documents.slice(0, 2) || []
+            },
+            {
+              id: 'st-def-2',
+              title: 'التقديم للجهة الحكومية المختصة والمتابعة',
+              description: 'توريد الملف بالمركز التكنولوجي أو الحي',
+              order: 2,
+              estimated_days: Math.max(1, (service?.estimated_days || 10) - 4),
+              required_documents: service?.required_documents.slice(2) || []
+            },
+            {
+              id: 'st-def-3',
+              title: 'استلام الترخيص النهائي المعتمد وتسليمه للعميل',
+              description: 'مراجعة أختام النسر وإصدار إشعار التسليم للعميل',
+              order: 3,
+              estimated_days: 2,
+              required_documents: []
+            }
+          ];
+
+    const totalDays = templateSteps.reduce((sum, s) => sum + (s.estimated_days || 1), 0);
     const now = new Date();
     const targetDate = new Date(now);
-    targetDate.setDate(now.getDate() + (service?.estimated_days || 10));
+    targetDate.setDate(now.getDate() + totalDays);
 
     const newReq: RequestRecord = {
       id: `req-${Date.now()}`,
@@ -365,6 +453,25 @@ class SqliteLocalEngine {
 
     this.db.requests.push(newReq);
 
+    // Generate Request Steps
+    const targetDates = this.calculateStepTargetDates(newReq.received_date, templateSteps);
+    const generatedSteps: RequestStep[] = templateSteps.map((ts, idx) => ({
+      id: `step-${newReq.id}-${idx + 1}-${Date.now()}`,
+      request_id: newReq.id,
+      title: ts.title,
+      description: ts.description,
+      order: idx + 1,
+      estimated_days: ts.estimated_days || 1,
+      target_date: targetDates[idx],
+      status: idx === 0 ? 'in_progress' : 'pending',
+      required_documents: ts.required_documents || [],
+      attached_document_ids: [],
+      created_at: now.toISOString()
+    }));
+
+    if (!this.db.request_steps) this.db.request_steps = [];
+    this.db.request_steps.push(...generatedSteps);
+
     // Immutable Audit History Entry
     const creator = this.db.profiles.find(p => p.id === data.createdByUserId);
     this.db.request_status_history.push({
@@ -374,7 +481,7 @@ class SqliteLocalEngine {
       to_status: 'new',
       changed_by_user_id: data.createdByUserId,
       changed_by_user_name: creator?.full_name || 'النظام',
-      comment: 'تم إنشاء الطلب وتسجيله بالمنظومة',
+      comment: `تم إنشاء الطلب وتسجيله بالمنظومة وتوليد ${generatedSteps.length} خطوات إجرائية بجدولها الزمني ومستنداتها`,
       created_at: now.toISOString()
     });
 
@@ -411,8 +518,39 @@ class SqliteLocalEngine {
     const service = this.db.service_types.find(s => s.id === data.service_type_id);
     const tracking_ref = this.generateTrackingRef();
     const now = new Date();
+
+    const templateSteps: WorkflowStepTemplate[] = (service?.workflow_steps && service.workflow_steps.length > 0)
+      ? service.workflow_steps
+      : [
+          {
+            id: 'st-pub-1',
+            title: 'المراجعة والاستيفاء المبدئي للملف',
+            description: 'فحص المستندات المرفقة والتأكد من مطابقتها للاشتراطات',
+            order: 1,
+            estimated_days: 2,
+            required_documents: service?.required_documents.slice(0, 2) || []
+          },
+          {
+            id: 'st-pub-2',
+            title: 'التقديم للجهة المختصة والمتابعة',
+            description: 'توريد الملف بالمركز التكنولوجي',
+            order: 2,
+            estimated_days: Math.max(1, (service?.estimated_days || 10) - 4),
+            required_documents: service?.required_documents.slice(2) || []
+          },
+          {
+            id: 'st-pub-3',
+            title: 'صدور الموافقة وتسليم الترخيص',
+            description: 'تسليم المحرر النهائي للعميل',
+            order: 3,
+            estimated_days: 2,
+            required_documents: []
+          }
+        ];
+
+    const totalDays = templateSteps.reduce((sum, s) => sum + (s.estimated_days || 1), 0);
     const targetDate = new Date(now);
-    targetDate.setDate(now.getDate() + (service?.estimated_days || 10));
+    targetDate.setDate(now.getDate() + totalDays);
 
     const newReq: RequestRecord = {
       id: `req-${Date.now()}`,
@@ -431,6 +569,24 @@ class SqliteLocalEngine {
 
     this.db.requests.push(newReq);
 
+    const targetDates = this.calculateStepTargetDates(newReq.received_date, templateSteps);
+    const generatedSteps: RequestStep[] = templateSteps.map((ts, idx) => ({
+      id: `step-${newReq.id}-${idx + 1}-${Date.now()}`,
+      request_id: newReq.id,
+      title: ts.title,
+      description: ts.description,
+      order: idx + 1,
+      estimated_days: ts.estimated_days || 1,
+      target_date: targetDates[idx],
+      status: idx === 0 ? 'in_progress' : 'pending',
+      required_documents: ts.required_documents || [],
+      attached_document_ids: [],
+      created_at: now.toISOString()
+    }));
+
+    if (!this.db.request_steps) this.db.request_steps = [];
+    this.db.request_steps.push(...generatedSteps);
+
     // Initial Public Audit Log
     this.db.request_status_history.push({
       id: `hist-${Date.now()}`,
@@ -439,7 +595,7 @@ class SqliteLocalEngine {
       to_status: 'new',
       changed_by_user_id: 'usr-admin',
       changed_by_user_name: 'بوابة الجمهور الإلكترونية',
-      comment: 'تقديم طلب إلكتروني جديد عبر الموقع الرسمي للصفوة',
+      comment: `تقديم طلب إلكتروني جديد عبر الموقع الرسمي للصفوة مع ${generatedSteps.length} خطوات إجرائية`,
       created_at: now.toISOString()
     });
 
@@ -537,7 +693,8 @@ class SqliteLocalEngine {
       received_date: req.received_date,
       target_date: req.target_date,
       branch_name_ar: branch?.name_ar || 'الصفوة',
-      status_history: history
+      status_history: history,
+      steps: this.getRequestSteps(req.id)
     };
   }
 
@@ -567,6 +724,7 @@ class SqliteLocalEngine {
 
   public uploadDocument(doc: {
     request_id: string;
+    step_id?: string;
     document_type: string;
     file_name: string;
     file_path: string;
@@ -578,6 +736,7 @@ class SqliteLocalEngine {
     const newDoc: DocumentRecord = {
       id: `doc-${Date.now()}`,
       request_id: doc.request_id,
+      step_id: doc.step_id,
       document_type: doc.document_type,
       file_name: doc.file_name,
       file_path: doc.file_path,
@@ -588,13 +747,214 @@ class SqliteLocalEngine {
     };
 
     this.db.documents.push(newDoc);
+
+    // If step_id provided, link to step
+    if (doc.step_id) {
+      const step = this.db.request_steps?.find(s => s.id === doc.step_id);
+      if (step) {
+        if (!step.attached_document_ids) step.attached_document_ids = [];
+        if (!step.attached_document_ids.includes(newDoc.id)) {
+          step.attached_document_ids.push(newDoc.id);
+        }
+      }
+    }
+
     this.saveDatabase();
     return newDoc;
   }
 
   public deleteDocument(docId: string): void {
+    // Unlink from any steps
+    if (this.db.request_steps) {
+      this.db.request_steps.forEach(s => {
+        if (s.attached_document_ids?.includes(docId)) {
+          s.attached_document_ids = s.attached_document_ids.filter(id => id !== docId);
+        }
+      });
+    }
+
     this.db.documents = this.db.documents.filter(d => d.id !== docId);
     this.saveDatabase();
+  }
+
+  // ==========================================
+  // 8.1 WORKFLOW STEPS & CHECKLIST API
+  // ==========================================
+  public getRequestSteps(requestId: string): RequestStep[] {
+    if (!this.db.request_steps) this.db.request_steps = [];
+    return this.db.request_steps
+      .filter(s => s.request_id === requestId)
+      .sort((a, b) => a.order - b.order);
+  }
+
+  public saveRequestStep(step: Partial<RequestStep> & { request_id: string; title: string }): RequestStep {
+    if (!this.db.request_steps) this.db.request_steps = [];
+    
+    let updated: RequestStep;
+    if (step.id) {
+      const idx = this.db.request_steps.findIndex(s => s.id === step.id);
+      if (idx !== -1) {
+        updated = { ...this.db.request_steps[idx], ...step };
+        this.db.request_steps[idx] = updated;
+      } else {
+        throw new Error('Step not found');
+      }
+    } else {
+      const existing = this.getRequestSteps(step.request_id);
+      const nextOrder = existing.length > 0 ? Math.max(...existing.map(s => s.order)) + 1 : 1;
+      
+      updated = {
+        id: `step-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        request_id: step.request_id,
+        title: step.title,
+        description: step.description,
+        order: step.order ?? nextOrder,
+        estimated_days: step.estimated_days ?? 2,
+        target_date: step.target_date,
+        status: step.status ?? 'pending',
+        required_documents: step.required_documents ?? [],
+        attached_document_ids: step.attached_document_ids ?? [],
+        notes: step.notes,
+        created_at: new Date().toISOString()
+      };
+      this.db.request_steps.push(updated);
+    }
+
+    this.saveDatabase();
+    return updated;
+  }
+
+  public updateRequestSteps(requestId: string, steps: RequestStep[]): RequestStep[] {
+    if (!this.db.request_steps) this.db.request_steps = [];
+    
+    // Remove old steps for this request
+    this.db.request_steps = this.db.request_steps.filter(s => s.request_id !== requestId);
+    
+    // Add new steps with sequentially normalized orders and target dates if needed
+    const req = this.db.requests.find(r => r.id === requestId);
+    const startDate = req?.received_date || new Date().toISOString().split('T')[0];
+    const targetDates = this.calculateStepTargetDates(startDate, steps);
+
+    const formattedSteps: RequestStep[] = steps.map((s, idx) => ({
+      ...s,
+      id: s.id || `step-${requestId}-${idx + 1}-${Date.now()}`,
+      request_id: requestId,
+      order: idx + 1,
+      estimated_days: Number(s.estimated_days) || 1,
+      target_date: s.target_date || targetDates[idx],
+      required_documents: Array.isArray(s.required_documents) ? s.required_documents : [],
+      attached_document_ids: Array.isArray(s.attached_document_ids) ? s.attached_document_ids : [],
+      created_at: s.created_at || new Date().toISOString()
+    }));
+
+    this.db.request_steps.push(...formattedSteps);
+
+    // Update the request's overall target date to match final step target date
+    if (req && formattedSteps.length > 0) {
+      req.target_date = formattedSteps[formattedSteps.length - 1].target_date;
+    }
+
+    this.saveDatabase();
+    return this.getRequestSteps(requestId);
+  }
+
+  public toggleStepCompletion(stepId: string, completedBy: string, completed?: boolean): RequestStep {
+    if (!this.db.request_steps) this.db.request_steps = [];
+    const idx = this.db.request_steps.findIndex(s => s.id === stepId);
+    if (idx === -1) throw new Error('Step not found');
+
+    const step = this.db.request_steps[idx];
+    const newStatus = completed !== undefined 
+      ? (completed ? 'completed' : 'in_progress')
+      : (step.status === 'completed' ? 'in_progress' : 'completed');
+
+    const updated: RequestStep = {
+      ...step,
+      status: newStatus,
+      completed_at: newStatus === 'completed' ? new Date().toISOString().split('T')[0] : undefined,
+      completed_by_name: newStatus === 'completed' ? completedBy : undefined
+    };
+
+    this.db.request_steps[idx] = updated;
+    this.saveDatabase();
+    return updated;
+  }
+
+  public setStepStatus(stepId: string, status: 'pending' | 'in_progress' | 'completed' | 'blocked', user?: string): RequestStep {
+    if (!this.db.request_steps) this.db.request_steps = [];
+    const idx = this.db.request_steps.findIndex(s => s.id === stepId);
+    if (idx === -1) throw new Error('Step not found');
+
+    const updated: RequestStep = {
+      ...this.db.request_steps[idx],
+      status,
+      completed_at: status === 'completed' ? new Date().toISOString().split('T')[0] : undefined,
+      completed_by_name: status === 'completed' ? (user || 'موظف المنظومة') : undefined
+    };
+
+    this.db.request_steps[idx] = updated;
+    this.saveDatabase();
+    return updated;
+  }
+
+  public linkDocumentToStep(stepId: string, documentId: string): void {
+    if (!this.db.request_steps) this.db.request_steps = [];
+    const step = this.db.request_steps.find(s => s.id === stepId);
+    if (step) {
+      if (!step.attached_document_ids) step.attached_document_ids = [];
+      if (!step.attached_document_ids.includes(documentId)) {
+        step.attached_document_ids.push(documentId);
+      }
+    }
+    const doc = this.db.documents.find(d => d.id === documentId);
+    if (doc) {
+      doc.step_id = stepId;
+    }
+    this.saveDatabase();
+  }
+
+  public unlinkDocumentFromStep(stepId: string, documentId: string): void {
+    if (!this.db.request_steps) this.db.request_steps = [];
+    const step = this.db.request_steps.find(s => s.id === stepId);
+    if (step && step.attached_document_ids) {
+      step.attached_document_ids = step.attached_document_ids.filter(id => id !== documentId);
+    }
+    const doc = this.db.documents.find(d => d.id === documentId);
+    if (doc && doc.step_id === stepId) {
+      doc.step_id = undefined;
+    }
+    this.saveDatabase();
+  }
+
+  public deleteRequestStep(stepId: string): void {
+    if (!this.db.request_steps) return;
+    this.db.request_steps = this.db.request_steps.filter(s => s.id !== stepId);
+    this.saveDatabase();
+  }
+
+  public resetRequestStepsToServiceTemplate(requestId: string): RequestStep[] {
+    const req = this.db.requests.find(r => r.id === requestId);
+    if (!req) throw new Error('Request not found');
+
+    const service = this.db.service_types.find(s => s.id === req.service_type_id);
+    const templateSteps = service?.workflow_steps || [];
+
+    const targetDates = this.calculateStepTargetDates(req.received_date, templateSteps);
+    const newSteps: RequestStep[] = templateSteps.map((ts, idx) => ({
+      id: `step-${req.id}-${idx + 1}-${Date.now()}`,
+      request_id: req.id,
+      title: ts.title,
+      description: ts.description,
+      order: idx + 1,
+      estimated_days: ts.estimated_days || 1,
+      target_date: targetDates[idx],
+      status: idx === 0 ? 'in_progress' : 'pending',
+      required_documents: ts.required_documents || [],
+      attached_document_ids: [],
+      created_at: new Date().toISOString()
+    }));
+
+    return this.updateRequestSteps(requestId, newSteps);
   }
 
   // ==========================================
