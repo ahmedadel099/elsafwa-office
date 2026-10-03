@@ -1,17 +1,26 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<!doctype html>
+<html lang="ar" dir="rtl" data-theme="light">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>شركة الصفوة للخدمات الحكومية والإلكترونية | El Safwa Office</title>
-    <meta name="description" content="منظومة إدارة الخدمات الحكومية والإلكترونية - شركة الصفوة ترخيص رقم ٦٧٩ (مجموعة ب) منيا القمح والشرقية" />
-    <!-- Google Fonts: Tajawal & Cairo -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#0e5a48" />
+    <title>الصفوة للخدمات الحكومية والإلكترونية — منيا القمح</title>
+    <meta
+      name="description"
+      content="مكتب الصفوة لمتابعة المعاملات والتراخيص الحكومية في منيا القمح والعزيزية — الشرقية. اعرف الأوراق المطلوبة، قدّم طلبك، وتابع معاملتك برقمها."
+    />
+    <script>
+      // Apply the saved theme before first paint to avoid a light/dark flash.
+      try {
+        // Light is the default; dark only when the user picked it (or chose "system" on a dark OS).
+        var pref = localStorage.getItem('elsafwa.theme.v2');
+        var dark = pref === 'dark' || (pref === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      } catch (e) {}
+    </script>
   </head>
-  <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-tajawal antialiased selection:bg-emerald-600 selection:text-white transition-colors duration-200">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

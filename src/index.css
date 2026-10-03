@@ -1,138 +1,270 @@
+@import "@fontsource/ibm-plex-sans-arabic/400.css";
+@import "@fontsource/ibm-plex-sans-arabic/500.css";
+@import "@fontsource/ibm-plex-sans-arabic/600.css";
+@import "@fontsource/ibm-plex-sans-arabic/700.css";
 @import "tailwindcss";
 
-@variant dark (&:where(.dark, .dark *));
+/* Dark mode is driven by data-theme on <html> (set by ThemeContext). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ------------------------------------------------------------------
+   Design tokens — semantic, theme-aware. Components use ONLY these
+   (bg-surface, text-ink-2, border-line …), never raw palette colours.
+   ------------------------------------------------------------------ */
+@theme inline {
+  --font-sans: "IBM Plex Sans Arabic", system-ui, "Segoe UI", Tahoma, sans-serif;
+
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-ink);
+  --color-on-brand: var(--on-brand);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-violet: var(--violet);
+  --color-violet-soft: var(--violet-soft);
+  --color-neutral: var(--neutral);
+  --color-neutral-soft: var(--neutral-soft);
+
+  --color-focus: var(--focus);
+  --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
+}
+
+:root {
+  color-scheme: light;
+  --canvas: #f5f5f2;
+  --surface: #ffffff;
+  --surface-2: #fafaf8;
+  --surface-3: #efefeb;
+  --line: #e4e3dd;
+  --line-strong: #cfcdc4;
+  --ink: #18201d;
+  --ink-2: #444c48;
+  --ink-3: #646b67;
+
+  --brand: #0e5a48;
+  --brand-strong: #0a4a3b;
+  --brand-soft: #e3f1ec;
+  --brand-ink: #0b4d3e;
+  --on-brand: #ffffff;
+  --accent: #8f6219;
+  --accent-soft: #f6eedc;
+
+  --info: #1d5bbf;
+  --info-soft: #e8f0fc;
+  --success: #17703f;
+  --success-soft: #e5f4ea;
+  --warning: #8a5300;
+  --warning-soft: #fcf1de;
+  --danger: #b42318;
+  --danger-soft: #fdeceb;
+  --violet: #5b3fb3;
+  --violet-soft: #efebfb;
+  --neutral: #4a524e;
+  --neutral-soft: #efefeb;
+
+  --focus: #0e5a48;
+  --shadow-card: 0 1px 2px rgb(16 24 20 / 0.04), 0 1px 3px rgb(16 24 20 / 0.04);
+  --shadow-pop: 0 12px 32px -8px rgb(16 24 20 / 0.18), 0 4px 8px -4px rgb(16 24 20 / 0.08);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #0e1311;
+  --surface: #151b18;
+  --surface-2: #1a211e;
+  --surface-3: #222a26;
+  --line: #29322e;
+  --line-strong: #3a4540;
+  --ink: #e8eeeb;
+  --ink-2: #b8c2bd;
+  --ink-3: #8f9a94;
+
+  --brand: #3fb08c;
+  --brand-strong: #5cc4a2;
+  --brand-soft: #143a2f;
+  --brand-ink: #86dcbf;
+  --on-brand: #04201a;
+  --accent: #d9a54d;
+  --accent-soft: #3a2c13;
+
+  --info: #8db4f5;
+  --info-soft: #172741;
+  --success: #6fcf97;
+  --success-soft: #133122;
+  --warning: #f0b45e;
+  --warning-soft: #3b2a10;
+  --danger: #f3897f;
+  --danger-soft: #3d1a17;
+  --violet: #b9a6f2;
+  --violet-soft: #29214a;
+  --neutral: #b8c2bd;
+  --neutral-soft: #242c28;
+
+  --focus: #5cc4a2;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-pop: 0 16px 40px -8px rgb(0 0 0 / 0.6);
+}
 
 @layer base {
-  :root {
-    --bg-canvas: #f8fafc;
-    --bg-card: #ffffff;
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #64748b;
-    --border-subtle: #e2e8f0;
-    --brand-emerald: #044e39;
-    --brand-emerald-hover: #065f46;
-    --brand-gold: #d4af37;
-    --brand-gold-dark: #b59226;
-  }
-
-  .dark {
-    --bg-canvas: #090d16;
-    --bg-card: #111827;
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    --border-subtle: #1e293b;
-    --brand-emerald: #059669;
-    --brand-emerald-hover: #10b981;
-    --brand-gold: #f59e0b;
-    --brand-gold-dark: #d97706;
+  html {
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
-    background-color: var(--bg-canvas);
-    color: var(--text-primary);
-    min-height: 100vh;
-    font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.7;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    line-height: 1.35;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* One consistent, highly visible focus indicator (WCAG 2.4.7 / 2.4.13). */
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: var(--brand-soft);
+    color: var(--brand-ink);
+  }
+
+  /* Numbers, IDs and money align in columns. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Latin-only strings (refs, phones, IDs) inside RTL text keep their order. */
+  .ltr-nums {
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-variant-numeric: tabular-nums;
+  }
+
+  dialog::backdrop {
+    background: rgb(10 16 13 / 0.45);
+    backdrop-filter: blur(2px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
-/* Taste Card Elevation & Polish */
-.taste-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 1.25rem;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+@layer components {
+  .skip-link {
+    position: absolute;
+    inset-inline-start: 1rem;
+    top: -4rem;
+    z-index: 100;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background: var(--brand);
+    color: var(--on-brand);
+    font-weight: 600;
+  }
+  .skip-link:focus {
+    top: 1rem;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+  }
 }
 
-.taste-card-interactive {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 1.25rem;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.taste-card-interactive:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
-  border-color: #cbd5e1;
+.animate-fade-up {
+  animation: fade-up 160ms ease-out both;
 }
 
-.dark .taste-card-interactive:hover {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-  border-color: #334155;
-}
-
-/* Solid Luxury Buttons */
-.btn-emerald {
-  background-color: var(--brand-emerald);
-  color: #ffffff;
-  font-weight: 700;
-  border-radius: 0.875rem;
-  transition: all 0.15s ease;
-}
-
-.btn-emerald:hover {
-  background-color: var(--brand-emerald-hover);
-  transform: translateY(-1px);
-}
-
-.btn-gold {
-  background-color: #f59e0b;
-  color: #0f172a;
-  font-weight: 800;
-  border-radius: 0.875rem;
-  transition: all 0.15s ease;
-}
-
-.btn-gold:hover {
-  background-color: #d97706;
-  color: #ffffff;
-  transform: translateY(-1px);
-}
-
-/* Custom Minimal Scrollbars */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 9999px;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: #334155;
-}
-
-/* Printable Receipts (@media print) */
+/* ------------------------------------------------------------------
+   Print: only the element marked .print-area is printed (receipts,
+   submission slips). A5 portrait suits Egyptian cash-receipt books.
+   ------------------------------------------------------------------ */
 @media print {
+  @page {
+    size: A5 portrait;
+    margin: 10mm;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
   body * {
     visibility: hidden;
   }
-  .printable-area, .printable-area * {
+
+  .print-area,
+  .print-area * {
     visibility: visible;
   }
-  .printable-area {
+
+  .print-area {
     position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
+    inset: 0;
     margin: 0;
-    padding: 20px;
-    background: #ffffff !important;
-    color: #000000 !important;
+    padding: 0;
+    color: #000 !important;
+    background: #fff !important;
     box-shadow: none !important;
-    border: none !important;
+    border: 0 !important;
   }
+
   .no-print {
     display: none !important;
   }

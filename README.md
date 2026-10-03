@@ -1,48 +1,48 @@
-# El Safwa Office — Services Management System
-### شركة الصفوة للخدمات الحكومية والإلكترونية وخدمات الجماهير (ترخيص رقم ٦٧٩ مجموعة ب)
+# الصفوة للخدمات الحكومية والإلكترونية — نسخة عرض
 
-An Arabic-first (RTL) web application and services management platform built for **El Safwa Office** in Sharqia Governorate, Egypt (Minya El Qamh & Aziziyya branches).
+منظومة لمكتب خدمات حكومية (منيا القمح والعزيزية — الشرقية) لاستبدال الملفات الورقية: العملاء، المعاملات وخطوات كل خدمة، المستندات والأصول، التحصيل والإيصالات وأمانات الرسوم الحكومية، وسجل نشاط لكل عملية. هذه **نسخة عرض (Demo)**: البيانات وهمية ومحفوظة في متصفحك فقط.
 
----
+## الوثائق
 
-## 📚 Project Documentation & Business Specifications
+| الملف | المحتوى |
+|---|---|
+| [documents/01-business-analysis.md](documents/01-business-analysis.md) | تحليل البزنس، مراجعة الديمو القديم، مراجعة الإجراءات القانونية لكل خدمة، الالتزامات القانونية، أسئلة اجتماع المكتب |
+| [documents/02-technology-and-security.md](documents/02-technology-and-security.md) | التكنولوجيا المقترحة والمعمارية والأمان وسجل النشاط والنزاهة المالية |
+| [documents/03-design-system.md](documents/03-design-system.md) | نظام التصميم الجديد |
+| [specs/001-office-operations-mvp/spec.md](specs/001-office-operations-mvp/spec.md) | مواصفات Spec-Kit (مسودة بانتظار اعتماد المكتب) |
+| [.specify/memory/constitution.md](.specify/memory/constitution.md) | مبادئ المشروع |
+| [documents/archive/](documents/archive/) | التوثيق القديم للديمو الأول |
 
-Comprehensive project specifications, business requirements, relational database DDL, and operational guides have been prepared in the [`documents/`](./documents/) folder:
+## التشغيل
 
-- **[Project Requirements & Business Guide](./documents/PROJECT_REQUIREMENTS_AND_BUSINESS_GUIDE.md)**: Complete business overview, RBAC matrix, service catalog, functional requirements, relational SQLite schema, and deliverable summaries.
-- **[Arabic Operational Guide](./documents/BUSINESS_OPERATIONS_ARABIC.md)**: دليل العمليات التشغيلية ومتطلبات المنظومة باللغة العربية.
-
----
-
-## 🌟 Key Features
-
-1. **🌐 Split Architecture:**
-   - **Public Citizen Portal:** Browse 12 government services, submit requests, receive instant tracking reference numbers (`SFW-YYYY-XXXXX`), and track progress with phone verification.
-   - **Protected Internal Back Office:** Gated authentication with role-based access for Admins, Branch Managers, and Employees.
-2. **✅ Task Execution Checklist:** Real-time procedural checklist for every request with live progress bar (`60% مكتمل - ٣ من ٥ مهمات`) and custom task additions.
-3. **📷 Dual-Mode Document Scanner & File Archive:**
-   - **Hardware Desktop Scanner (TWAIN/WIA):** Connects to Epson, Canon, HP LaserJet MFP, and Fujitsu document scanners with ADF and DPI controls.
-   - **Camera Document Scanner:** Direct camera capture with high-contrast B&W text scan filter.
-   - In-browser PDF and image viewer.
-4. **📊 Executive Analytics & Visual Charts:** Recharts Donut status chart and comparative multi-branch revenue bar chart.
-5. **💰 Treasury & Official Arabic Receipts:** Installment tracking, balance due calculation, and print-ready Arabic cash receipts (`@media print`).
-6. **💾 100% Local Relational SQLite Database:** Self-contained relational database engine with local persistence.
-7. **🏛️ Minimalist Executive Swiss UI Architecture:** Clean solid flat surfaces, zero gradients, and working Light/Dark modes.
-
----
-
-## 🚀 Quick Start
+يتطلب Node.js 20.19+ (تم الاختبار على 24 LTS).
 
 ```bash
-# 1. Install dependencies
-npm install
-
-# 2. Run local development server
-npm run dev
-
-# 3. Build production bundle
-npm run build
+npm ci
 ```
 
----
-*License No. 679 Group B — El Safwa Office, Minya El Qamh & Aziziyya, Sharqia, Egypt.*
+```bash
+npm run dev
+```
+
+ثم افتح `http://localhost:3000`. للبناء: `npm run build` (يشمل فحص TypeScript).
+
+## جولة سريعة
+
+- **موقع العملاء** (`/#/`): دليل الخدمات والمستندات، تقديم طلب، وتتبع معاملة برمز تحقق (الرمز يظهر على الشاشة في نسخة العرض).
+- **دخول الموظفين** (`/#/staff/login`): أزرار دخول سريع لكل دور، أو أي بريد معروض مع كلمة مرور العرض الظاهرة على الصفحة (حساب المدير العام يطلب رمز تحقق بخطوتين ويظهر الرمز تحت الحقل).
+- جرّب: تحديث حالة معاملة ← تحصيل مبلغ وطباعة الإيصال ← رفع مستند أو تصويره ← **سجل النشاط** ← "التحقق من سلامة السجل" ثم "محاكاة تعديل غير مصرح" ← "إعادة ضبط البيانات".
+
+## البنية
+
+```
+src/
+  app/        الجلسة والثيم وشريط نسخة العرض
+  data/       الأنواع، الكتالوج، البيانات التجريبية، المحرك (صلاحيات + سجل نشاط + قواعد مالية)
+  lib/        التوجيه، التنسيق والتفقيط، التحقق من الرقم القومي والموبايل، SHA-256، CSV
+  ui/         مكوّنات نظام التصميم
+  public/     موقع العملاء
+  staff/      لوحة الموظفين
+```
+
+> تنبيه: المحرك داخل المتصفح يحاكي قواعد النظام الفعلي لكنه **ليس آمنًا لبيانات حقيقية**. لا تُدخل بيانات عملاء حقيقيين في هذه النسخة.
