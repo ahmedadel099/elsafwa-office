@@ -9,6 +9,7 @@
 | [documents/01-business-analysis.md](documents/01-business-analysis.md) | تحليل البزنس، مراجعة الديمو القديم، مراجعة الإجراءات القانونية لكل خدمة، الالتزامات القانونية، أسئلة اجتماع المكتب |
 | [documents/02-technology-and-security.md](documents/02-technology-and-security.md) | التكنولوجيا المقترحة والمعمارية والأمان وسجل النشاط والنزاهة المالية |
 | [documents/03-design-system.md](documents/03-design-system.md) | نظام التصميم الجديد |
+| [documents/04-discovery-questionnaire.md](documents/04-discovery-questionnaire.md) | استبيان جمع المتطلبات من المكتب: الأسئلة وشكل الإجابات المتوقعة وخطة الاجتماعات |
 | [specs/001-office-operations-mvp/spec.md](specs/001-office-operations-mvp/spec.md) | مواصفات Spec-Kit (مسودة بانتظار اعتماد المكتب) |
 | [.specify/memory/constitution.md](.specify/memory/constitution.md) | مبادئ المشروع |
 | [documents/archive/](documents/archive/) | التوثيق القديم للديمو الأول |
