@@ -24,7 +24,7 @@ import type {
   RequestStatus,
 } from './types';
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 /** Demo-only credentials (shown on the login page). Production: Argon2id hashes + mandatory MFA. */
 export const DEMO_PASSWORD = 'Safwa@2026';
